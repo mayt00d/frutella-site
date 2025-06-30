@@ -514,8 +514,7 @@
                 <div class="topping-badge bg-white p-4 rounded-xl shadow-md text-center">
                     <div class="bg-amber-100 w-16 h-16 mx-auto rounded-full flex items-center justify-center mb-3">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                        </svg>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>
                     </div>
                     <h3 class="font-medium text-green-900">Miel</h3>
                     <p class="text-sm text-gray-500">$1.00</p>
@@ -734,7 +733,8 @@
 
         // State Variables (from localStorage for persistence)
         let cart = JSON.parse(localStorage.getItem('cart')) || [];
-        let orders = JSON.parse(localStorage.getItem('orders')) || [];
+        // Changed to 'frutella_all_orders' for centralized storage
+        let allOrders = JSON.parse(localStorage.getItem('frutella_all_orders')) || []; 
         let currentClientId = localStorage.getItem('currentClientId') || crypto.randomUUID();
         localStorage.setItem('currentClientId', currentClientId); // Ensure a client ID is always set
 
@@ -937,7 +937,8 @@
         // --- Admin Panel Functions ---
         function renderPendingOrders() {
             pendingOrdersContainer.innerHTML = '';
-            const pending = orders.filter(order => order.status === 'pending');
+            // Read from the global 'allOrders' variable
+            const pending = allOrders.filter(order => order.status === 'pending');
 
             if (pending.length === 0) {
                 noOrdersMessage.classList.remove('hidden');
@@ -971,16 +972,14 @@
         }
 
         function markOrderAsReady(orderIdToMark, clientIdToAlert) {
-            const orderIndex = orders.findIndex(order => order.orderId === orderIdToMark);
+            const orderIndex = allOrders.findIndex(order => order.orderId === orderIdToMark);
             if (orderIndex > -1) {
-                orders[orderIndex].status = 'ready';
-                localStorage.setItem('orders', JSON.stringify(orders)); // Trigger storage event
+                allOrders[orderIndex].status = 'ready';
+                localStorage.setItem('frutella_all_orders', JSON.stringify(allOrders)); // Update global orders
                 showNotification(`Pedido ${orderIdToMark.substring(0,8)}... marcado como listo.`, 'success');
                 renderPendingOrders(); // Re-render admin panel
 
-                // IMPORTANT: This relies on the client's page being open and listening
-                // In a real app, this would be a server-side push notification
-                // For this simulation, we'll store the alert for the specific client
+                // Store client-specific alert data
                 localStorage.setItem(`client_alert_${clientIdToAlert}`, JSON.stringify({
                     orderId: orderIdToMark,
                     message: `¡Tu pedido #${orderIdToMark.substring(0,8)}... de Frutella está listo para recoger!`,
@@ -1087,7 +1086,7 @@
 
             const newOrderId = generateUniqueId();
 
-            orders.push({
+            allOrders.push({ // Push to global allOrders
                 orderId: newOrderId,
                 clientId: currentClientId, // Associate order with the current client session
                 customerName: customerName || 'Anónimo',
@@ -1096,7 +1095,7 @@
                 timestamp: new Date().toLocaleString(),
                 status: 'pending' // New status field
             });
-            localStorage.setItem('orders', JSON.stringify(orders));
+            localStorage.setItem('frutella_all_orders', JSON.stringify(allOrders)); // Save global orders
 
             cart = [];
             localStorage.removeItem('cart');
@@ -1159,9 +1158,13 @@
 
         // Listen for storage changes across tabs/windows for multi-user simulation (limited for same page)
         window.addEventListener('storage', (event) => {
-            if (event.key === 'orders') {
-                orders = JSON.parse(event.newValue);
-                renderPendingOrders(); // Update admin view if open
+            // If the global orders data changes, update both admin and client views if applicable
+            if (event.key === 'frutella_all_orders') {
+                allOrders = JSON.parse(event.newValue);
+                // Only render admin panel if it's currently open and the user is logged in
+                if (adminModal.classList.contains('hidden') === false && isAdminLoggedIn) {
+                    renderPendingOrders(); 
+                }
             }
             // Check specifically for client's own alert
             if (event.key === `client_alert_${currentClientId}`) {
@@ -1171,7 +1174,7 @@
         
         // Initial load calls
         updateCartDisplay();
-        renderPendingOrders();
+        renderPendingOrders(); // This will now fetch from 'frutella_all_orders'
         renderClientNotifications(); // Check for any ready orders on load
     </script>
 </body>
