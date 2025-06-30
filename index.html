@@ -514,7 +514,8 @@
                 <div class="topping-badge bg-white p-4 rounded-xl shadow-md text-center">
                     <div class="bg-amber-100 w-16 h-16 mx-auto rounded-full flex items-center justify-center mb-3">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                        </svg>
                     </div>
                     <h3 class="font-medium text-green-900">Miel</h3>
                     <p class="text-sm text-gray-500">$1.00</p>
@@ -580,7 +581,7 @@
                 <div class="md:w-1/2">
                     <h3 class="text-2xl font-bold text-green-800 mb-4">Nuestra Misión</h3>
                     <p class="text-gray-700 mb-4">Frutella nació de la pasión por la comida natural y el bienestar. Nuestra misión es ofrecer bowls de frutas orgánicas, frescos y nutritivos que deleiten tu paladar y cuiden tu cuerpo.</p>
-                    <p class="text-700 mb-4">Trabajamos directamente con agricultores locales para asegurar que cada fruta que usamos sea de la más alta calidad y cultivada de manera sostenible.</p>
+                    <p class="text-gray-700 mb-4">Trabajamos directamente con agricultores locales para asegurar que cada fruta que usamos sea de la más alta calidad y cultivada de manera sostenible.</p>
                     <h3 class="text-2xl font-bold text-green-800 mb-4">Nuestros Valores</h3>
                     <ul class="list-disc list-inside text-gray-700 space-y-2">
                         <li>Frescura y Calidad: Ingredientes siempre frescos y de la mejor calidad.</li>
@@ -733,8 +734,7 @@
 
         // State Variables (from localStorage for persistence)
         let cart = JSON.parse(localStorage.getItem('cart')) || [];
-        // Changed to 'frutella_all_orders' for centralized storage
-        let allOrders = JSON.parse(localStorage.getItem('frutella_all_orders')) || []; 
+        let orders = JSON.parse(localStorage.getItem('orders')) || [];
         let currentClientId = localStorage.getItem('currentClientId') || crypto.randomUUID();
         localStorage.setItem('currentClientId', currentClientId); // Ensure a client ID is always set
 
@@ -820,41 +820,6 @@
             cartCountSpan.textContent = cart.reduce((sum, item) => sum + item.quantity, 0);
 
             localStorage.setItem('cart', JSON.stringify(cart));
-        }
-
-        function removeFromCart(id) {
-            const itemIndex = cart.findIndex(item => item.id === id);
-            if (itemIndex > -1) {
-                const removedItemName = cart[itemIndex].name;
-                cart.splice(itemIndex, 1); // Remove the item
-                updateCartDisplay();
-                showNotification(`"${removedItemName}" eliminado del carrito.`, 'error');
-            }
-        }
-
-        function decreaseQuantity(id) {
-            const itemIndex = cart.findIndex(item => item.id === id);
-            if (itemIndex > -1) {
-                if (cart[itemIndex].quantity > 1) {
-                    cart[itemIndex].quantity--;
-                    showNotification(`Cantidad de "${cart[itemIndex].name}" reducida.`, 'info');
-                } else {
-                    // If quantity becomes 0, remove the item
-                    const removedItemName = cart[itemIndex].name;
-                    cart.splice(itemIndex, 1); // Remove the item
-                    showNotification(`"${removedItemName}" eliminado del carrito.`, 'error');
-                }
-            }
-            updateCartDisplay();
-        }
-
-        function increaseQuantity(id) {
-            const itemIndex = cart.findIndex(item => item.id === id);
-            if (itemIndex > -1) {
-                cart[itemIndex].quantity++;
-                showNotification(`Cantidad de "${cart[itemIndex].name}" aumentada.`, 'info');
-            }
-            updateCartDisplay();
         }
 
         // --- Customize Bowl Logic ---
@@ -971,50 +936,53 @@
 
         // --- Admin Panel Functions ---
         function renderPendingOrders() {
-            pendingOrdersContainer.innerHTML = '';
-            // Read from the global 'allOrders' variable
-            const pending = allOrders.filter(order => order.status === 'pending');
+    pendingOrdersContainer.innerHTML = '';
 
-            if (pending.length === 0) {
-                noOrdersMessage.classList.remove('hidden');
-            } else {
-                noOrdersMessage.classList.add('hidden');
-                pending.forEach((order, index) => {
-                    const orderElement = document.createElement('div');
-                    orderElement.className = 'bg-gray-100 p-4 rounded-lg shadow-sm mb-4 border-l-4 border-blue-500';
-                    orderElement.innerHTML = `
-                        <p class="font-bold text-lg text-green-800 mb-2">Pedido #${order.orderId.substring(0, 8)} - Cliente: ${order.customerName || 'Anónimo'} (ID Cliente: ${order.clientId.substring(0, 8)}...)</p>
-                        <ul class="list-disc list-inside ml-4 mt-2 text-gray-700">
-                            ${order.items.map(item => {
-                                let itemPriceIncludingToppings = item.price;
-                                item.toppings.forEach(topping => {
-                                    itemPriceIncludingToppings += topping.price;
-                                });
-                                return `
-                                <li>${item.name} x ${item.quantity} (${formatPrice(itemPriceIncludingToppings)}) 
-                                    ${item.toppings && item.toppings.length > 0 ? `(Toppings: ${item.toppings.map(t => t.name).join(', ')})` : ''}
-                                </li>`;
-                            }).join('')}
-                        </ul>
-                        <p class="font-bold text-right mt-2">Total: ${formatPrice(order.total)}</p>
-                        <button data-order-id="${order.orderId}" data-client-id="${order.clientId}" class="mark-as-ready-btn mt-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow-md transition">
-                            Marcar Pedido Listo y Alertar
-                        </button>
-                    `;
-                    pendingOrdersContainer.appendChild(orderElement);
-                });
-            }
-        }
+    // Cargar pedidos globales actualizados desde localStorage
+    allOrders = JSON.parse(localStorage.getItem('frutella_all_orders')) || [];
+
+    const pending = allOrders.filter(order => order.status === 'pending');
+
+    if (pending.length === 0) {
+        noOrdersMessage.classList.remove('hidden');
+    } else {
+        noOrdersMessage.classList.add('hidden');
+        pending.forEach(order => {
+            const orderElement = document.createElement('div');
+            orderElement.className = 'bg-gray-100 p-4 rounded-lg shadow-sm mb-4 border-l-4 border-blue-500';
+            orderElement.innerHTML = `
+                <p class="font-bold text-lg text-green-800 mb-2">
+                    Pedido #${order.orderId.substring(0, 8)} - Cliente: ${order.customerName || 'Anónimo'} (ID Cliente: ${order.clientId.substring(0, 8)}...)
+                </p>
+                <ul class="list-disc list-inside ml-4 mt-2 text-gray-700">
+                    ${order.items.map(item => {
+                        let itemPrice = item.price;
+                        item.toppings.forEach(t => itemPrice += t.price);
+                        return `<li>${item.name} x ${item.quantity} (${formatPrice(itemPrice)}) ${item.toppings.length ? `(Toppings: ${item.toppings.map(t => t.name).join(', ')})` : ''}</li>`;
+                    }).join('')}
+                </ul>
+                <p class="font-bold text-right mt-2">Total: ${formatPrice(order.total)}</p>
+                <button data-order-id="${order.orderId}" data-client-id="${order.clientId}" class="mark-as-ready-btn mt-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow-md transition">
+                    Marcar Pedido Listo y Alertar
+                </button>
+            `;
+            pendingOrdersContainer.appendChild(orderElement);
+        });
+    }
+}
+
 
         function markOrderAsReady(orderIdToMark, clientIdToAlert) {
-            const orderIndex = allOrders.findIndex(order => order.orderId === orderIdToMark);
+            const orderIndex = orders.findIndex(order => order.orderId === orderIdToMark);
             if (orderIndex > -1) {
-                allOrders[orderIndex].status = 'ready';
-                localStorage.setItem('frutella_all_orders', JSON.stringify(allOrders)); // Update global orders
+                orders[orderIndex].status = 'ready';
+                localStorage.setItem('orders', JSON.stringify(orders)); // Trigger storage event
                 showNotification(`Pedido ${orderIdToMark.substring(0,8)}... marcado como listo.`, 'success');
                 renderPendingOrders(); // Re-render admin panel
 
-                // Store client-specific alert data
+                // IMPORTANT: This relies on the client's page being open and listening
+                // In a real app, this would be a server-side push notification
+                // For this simulation, we'll store the alert for the specific client
                 localStorage.setItem(`client_alert_${clientIdToAlert}`, JSON.stringify({
                     orderId: orderIdToMark,
                     message: `¡Tu pedido #${orderIdToMark.substring(0,8)}... de Frutella está listo para recoger!`,
@@ -1121,7 +1089,7 @@
 
             const newOrderId = generateUniqueId();
 
-            allOrders.push({ // Push to global allOrders
+            orders.push({
                 orderId: newOrderId,
                 clientId: currentClientId, // Associate order with the current client session
                 customerName: customerName || 'Anónimo',
@@ -1130,7 +1098,7 @@
                 timestamp: new Date().toLocaleString(),
                 status: 'pending' // New status field
             });
-            localStorage.setItem('frutella_all_orders', JSON.stringify(allOrders)); // Save global orders
+            localStorage.setItem('orders', JSON.stringify(orders));
 
             cart = [];
             localStorage.removeItem('cart');
@@ -1154,21 +1122,20 @@
                 adminPasswordInput.value = ''; // Clear password field
             }
         });
-
-        adminLoginBtn.addEventListener('click', () => {
-            const password = adminPasswordInput.value;
-            if (password === ADMIN_PASSWORD) {
-                isAdminLoggedIn = true;
-                localStorage.setItem('isAdminLoggedIn', 'true');
-                adminLoginArea.classList.add('hidden');
-                adminContentArea.classList.remove('hidden');
-                renderPendingOrders();
-                showNotification('Acceso de administrador concedido.', 'success');
-            } else {
-                showNotification('Clave incorrecta. Intenta de nuevo.', 'error');
-                adminPasswordInput.value = '';
-            }
-        });
+adminLoginBtn.addEventListener('click', () => {
+    const password = adminPasswordInput.value;
+    if (password === ADMIN_PASSWORD) {
+        isAdminLoggedIn = true;
+        localStorage.setItem('isAdminLoggedIn', 'true');
+        adminLoginArea.classList.add('hidden');
+        adminContentArea.classList.remove('hidden');
+        renderPendingOrders(); // Mostrar pedidos globales
+        showNotification('Acceso de administrador concedido.', 'success');
+    } else {
+        showNotification('Clave incorrecta. Intenta de nuevo.', 'error');
+        adminPasswordInput.value = '';
+    }
+});
 
         adminLogoutButton.addEventListener('click', () => {
             isAdminLoggedIn = false;
@@ -1193,13 +1160,9 @@
 
         // Listen for storage changes across tabs/windows for multi-user simulation (limited for same page)
         window.addEventListener('storage', (event) => {
-            // If the global orders data changes, update both admin and client views if applicable
-            if (event.key === 'frutella_all_orders') {
-                allOrders = JSON.parse(event.newValue);
-                // Only render admin panel if it's currently open and the user is logged in
-                if (adminModal.classList.contains('hidden') === false && isAdminLoggedIn) {
-                    renderPendingOrders(); 
-                }
+            if (event.key === 'orders') {
+                orders = JSON.parse(event.newValue);
+                renderPendingOrders(); // Update admin view if open
             }
             // Check specifically for client's own alert
             if (event.key === `client_alert_${currentClientId}`) {
@@ -1209,7 +1172,9 @@
         
         // Initial load calls
         updateCartDisplay();
-        renderPendingOrders(); // This will now fetch from 'frutella_all_orders'
+       if (localStorage.getItem('isAdminLoggedIn') === 'true') {
+    renderPendingOrders();
+}
         renderClientNotifications(); // Check for any ready orders on load
     </script>
 </body>
