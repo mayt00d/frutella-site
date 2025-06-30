@@ -1,0 +1,1178 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Frutella - Bowls Saludables y Orgánicos</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #fcf8ff;
+        }
+        .hero-pattern {
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+        .bowl-card {
+            transition: all 0.3s ease;
+        }
+        .bowl-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        .bowl-image {
+            height: 220px;
+            background-size: cover;
+            background-position: center;
+            border-radius: 12px 12px 0 0;
+        }
+        .strawberry-gradient {
+            background: linear-gradient(135deg, #ff5e7d 0%, #ff3a5e 100%);
+        }
+        .mango-gradient {
+            background: linear-gradient(135deg, #ff9a3c 0%, #ff7e1f 100%);
+        }
+        .banana-gradient {
+            background: linear-gradient(135deg, #ffde59 0%, #ffc107 100%);
+        }
+        .blueberry-gradient {
+            background: linear-gradient(135deg, #7c4dff 0%, #5e35b1 100%);
+        }
+        .mixed-gradient {
+            background: linear-gradient(135deg, #43a047 0%, #2e7d32 100%);
+        }
+        .topping-badge {
+            transition: all 0.2s ease;
+            cursor: pointer; /* Ensure it looks clickable */
+        }
+        .topping-badge:hover {
+            transform: scale(1.05);
+        }
+        .topping-selected {
+            background-color: #4c1d95; /* Deep purple for selected */
+            color: white;
+            border: 2px solid #6d28d9; /* A stronger border */
+        }
+        .cart-item {
+            animation: fadeIn 0.5s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .notification {
+            animation: slideIn 0.5s ease, vibrate 0.3s linear 3;
+        }
+        @keyframes slideIn {
+            from { transform: translateY(-100%); }
+            to { transform: translateY(0); }
+        }
+        @keyframes vibrate {
+            0% { transform: translate(0); }
+            20% { transform: translate(-2px, 2px); }
+            40% { transform: translate(-2px, -2px); }
+            60% { transform: translate(2px, 2px); }
+            80% { transform: translate(2px, -2px); }
+            100% { transform: translate(0); }
+        }
+        .modal-overlay {
+            background-color: rgba(0, 0, 0, 0.5);
+            transition: all 0.3s ease;
+        }
+        .client-alert-notification {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #4CAF50; /* Green */
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: slideIn 0.5s ease-out;
+        }
+        .client-alert-notification.hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="bg-green-800 text-white shadow-lg sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8zm-4-9h8a1 1 0 0 0 0-2H8a1 1 0 0 0 0 2z"/>
+                </svg>
+                <span class="font-bold text-xl">Frutella</span>
+            </div>
+            <div class="hidden md:flex space-x-8">
+                <a href="#inicio" class="hover:text-green-200 transition">Inicio</a>
+                <a href="#bowls" class="hover:text-green-200 transition">Nuestros Bowls</a>
+                <a href="#toppings" class="hover:text-green-200 transition">Toppings</a>
+                <a href="#about" class="hover:text-green-200 transition">Nosotros</a>
+                <a href="#contact" class="hover:text-green-200 transition">Contacto</a>
+            </div>
+            <div class="flex items-center space-x-4">
+                <button id="cart-button" class="relative">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                    <span id="cart-count" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">0</span>
+                </button>
+                <button id="admin-access-button" class="bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 px-4 rounded-lg shadow-md transition ml-4">
+                    Admin
+                </button>
+                <button class="md:hidden focus:outline-none" id="menu-button">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <!-- Mobile menu -->
+        <div class="md:hidden hidden bg-green-700 pb-4 px-4" id="mobile-menu">
+            <a href="#inicio" class="block py-2 hover:bg-green-600 px-3 rounded">Inicio</a>
+            <a href="#bowls" class="block py-2 hover:bg-green-600 px-3 rounded">Nuestros Bowls</a>
+            <a href="#toppings" class="block py-2 hover:bg-green-600 px-3 rounded">Toppings</a>
+            <a href="#about" class="block py-2 hover:bg-green-600 px-3 rounded">Nosotros</a>
+            <a href="#contact" class="block py-2 hover:bg-green-600 px-3 rounded">Contacto</a>
+        </div>
+    </nav>
+
+    <!-- Notification Area for general messages -->
+    <div id="notification-area" class="fixed top-0 left-0 right-0 z-50 flex justify-center pointer-events-none">
+        <!-- Notifications will be inserted here -->
+    </div>
+
+    <!-- Client-specific Order Ready Notification -->
+    <div id="client-order-alert" class="client-alert-notification hidden">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <span id="client-alert-message">¡Tu pedido está listo!</span>
+        <button id="close-client-alert" class="ml-auto text-white hover:text-gray-200">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+            </svg>
+        </button>
+    </div>
+
+    <!-- Customize Bowl Modal -->
+    <div id="customize-bowl-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden">
+        <div class="modal-overlay absolute inset-0"></div>
+        <div class="bg-white w-full max-w-lg mx-4 rounded-lg shadow-lg z-50 overflow-y-auto max-h-[90vh] p-6">
+            <div class="flex justify-between items-center border-b pb-4 mb-4">
+                <h3 class="text-2xl font-bold text-green-900" id="customize-bowl-name">Personalizar Bowl</h3>
+                <button id="close-customize-bowl" class="text-gray-500 hover:text-gray-700">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <div class="mb-6">
+                <p class="text-xl font-semibold text-gray-800 mb-2">Precio base: <span id="customize-bowl-price"></span></p>
+                <h4 class="text-xl font-bold text-green-800 mb-4">Añadir Toppings:</h4>
+                <div id="customize-toppings-container" class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    <!-- Toppings will be loaded here dynamically -->
+                </div>
+                <p class="text-lg font-semibold text-right mt-4">Total con toppings: <span id="customize-total-price">$0.00</span></p>
+            </div>
+            <button id="add-customized-bowl-to-cart" class="bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-6 rounded-lg shadow-lg transition w-full">
+                Añadir al Carrito
+            </button>
+        </div>
+    </div>
+
+    <!-- Cart Modal -->
+    <div id="cart-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden">
+        <div class="modal-overlay absolute inset-0"></div>
+        <div class="bg-white w-full max-w-md mx-4 rounded-lg shadow-lg z-50 overflow-y-auto max-h-[90vh]">
+            <div class="py-4 px-6 border-b border-gray-200 flex justify-between items-center">
+                <h3 class="text-xl font-bold text-green-900">Tu Carrito</h3>
+                <button id="close-cart" class="text-gray-500 hover:text-gray-700">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <div class="py-4 px-6">
+                <div id="cart-items" class="space-y-4 mb-6">
+                    <!-- Cart items will be inserted here -->
+                    <div class="text-center text-gray-500 py-8" id="empty-cart-message">
+                        Tu carrito está vacío
+                    </div>
+                </div>
+                <div class="border-t border-gray-200 pt-4">
+                    <div class="flex justify-between mb-2">
+                        <span class="font-medium">Subtotal:</span>
+                        <span id="cart-subtotal">$0.00</span>
+                    </div>
+                    <div class="flex justify-between mb-4">
+                        <span class="font-medium">Total:</span>
+                        <span id="cart-total" class="font-bold text-green-900">$0.00</span>
+                    </div>
+                    <div class="mb-4">
+                        <label for="customer-name" class="block text-gray-700 mb-2">Tu nombre:</label>
+                        <input type="text" id="customer-name" placeholder="Ingresa tu nombre" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600">
+                    </div>
+                    <button id="checkout-btn" class="bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-6 rounded-lg shadow-lg transition w-full">
+                        Realizar Pedido
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Panel Modal -->
+    <div id="admin-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden">
+        <div class="modal-overlay absolute inset-0"></div>
+        <div class="bg-white w-full max-w-xl mx-4 rounded-lg shadow-lg z-50 overflow-y-auto max-h-[90vh]">
+            <div class="py-4 px-6 border-b border-gray-200 flex justify-between items-center">
+                <h3 class="text-xl font-bold text-green-900">Panel de Administrador</h3>
+                <button id="close-admin" class="text-gray-500 hover:text-gray-700">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <div id="admin-login-area" class="py-4 px-6">
+                <p class="text-gray-700 mb-4">Para acceder al panel de administración, por favor, ingresa la clave:</p>
+                <input type="password" id="admin-password-input" placeholder="Clave de administrador" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600 mb-4">
+                <button id="admin-login-btn" class="bg-purple-600 hover:bg-purple-700 text-white font-medium py-3 px-6 rounded-lg shadow-lg transition w-full">
+                    Ingresar
+                </button>
+            </div>
+            <div id="admin-content-area" class="py-4 px-6 hidden">
+                <h4 class="text-lg font-semibold text-green-800 mb-4">Pedidos Pendientes</h4>
+                <div id="pending-orders" class="space-y-4 mb-6">
+                    <!-- Pending orders will be inserted here -->
+                    <div class="text-center text-gray-500 py-8" id="no-orders-message">
+                        No hay pedidos pendientes
+                    </div>
+                </div>
+                <div class="border-t border-gray-200 pt-4">
+                    <button id="admin-logout-btn" class="bg-red-600 hover:bg-red-700 text-white font-medium py-3 px-6 rounded-lg shadow-lg transition w-full">
+                        Cerrar Sesión (Admin)
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hero Section -->
+    <section id="inicio" class="hero-pattern py-20 md:py-32">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row items-center">
+                <div class="md:w-1/2 mb-10 md:mb-0">
+                    <h1 class="text-4xl md:text-5xl font-bold text-green-900 mb-4">Descubre el sabor de <span class="text-green-600">Frutella</span></h1>
+                    <p class="text-lg text-gray-700 mb-8">Deliciosos bowls preparados con frutas frescas orgánicas y toppings saludables hechos a mano con amor.</p>
+                    <a href="#bowls" class="bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-6 rounded-lg shadow-lg transition transform hover:-translate-y-1">Ver Nuestros Bowls</a>
+                </div>
+                <div class="md:w-1/2 flex justify-center">
+                    <div class="relative w-72 h-72 md:w-96 md:h-96">
+                        <div class="absolute inset-0 bg-green-200 rounded-full opacity-30 animate-pulse"></div>
+                        <svg class="absolute inset-0" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                            <path fill="#4CAF50" d="M45.7,-58.9C59.9,-51.2,72.5,-38.7,77.9,-23.7C83.3,-8.7,81.5,8.9,74.9,24.1C68.3,39.3,57,52.1,43.1,60.6C29.2,69.1,12.8,73.3,-2.4,76.3C-17.6,79.3,-31.7,81.1,-45.4,75.3C-59.1,69.5,-72.3,56.1,-78.1,40.2C-83.9,24.3,-82.3,5.9,-77.2,-10.2C-72.1,-26.3,-63.5,-40.1,-51.1,-48.5C-38.7,-56.9,-22.5,-59.9,-6.5,-52.3C9.5,-44.7,31.5,-66.6,45.7,-58.9Z" transform="translate(100 100)" />
+                        </svg>
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-40 w-40 text-white" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8zm-4-9h8a1 1 0 0 0 0-2H8a1 1 0 0 0 0 2z"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Bowls Section -->
+    <section id="bowls" class="py-16 bg-white">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl md:text-4xl font-bold text-center text-green-900 mb-4">Nuestros Bowls de Frutas</h2>
+            <p class="text-center text-gray-600 mb-12 max-w-2xl mx-auto">Descubre nuestra variedad de deliciosos bowls preparados con frutas frescas orgánicas de temporada.</p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Bowl 1: Fresa -->
+                <div class="bowl-card bg-white rounded-xl shadow-md overflow-hidden">
+                    <div class="bowl-image strawberry-gradient relative">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="absolute bottom-0 left-0 w-full" viewBox="0 0 1440 320">
+                            <path fill="#ffffff" fill-opacity="1" d="M0,224L48,213.3C96,203,192,181,288,181.3C384,181,480,203,576,224C672,245,768,267,864,261.3C960,256,1056,224,1152,208C1248,192,1344,192,1392,192L1440,192L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
+                        </svg>
+                        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20 text-white" viewBox="0 0 20 20" fill="currentColor">
+                                <path d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" />
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="p-5">
+                        <h3 class="text-xl font-bold text-green-900 mb-2">Bowl de Fresa</h3>
+                        <p class="text-gray-600 mb-4">Base de yogurt natural con fresas frescas y tu elección de toppings.</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-green-600 font-bold">$8.99</span>
+                            <button class="add-to-cart-btn bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition" 
+                                    data-name="Bowl de Fresa" 
+                                    data-price="8.99" 
+                                    data-id="bowl-1">Añadir al Carrito</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bowl 2: Mango -->
+                <div class="bowl-card bg-white rounded-xl shadow-md overflow-hidden">
+                    <div class="bowl-image mango-gradient relative">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="absolute bottom-0 left-0 w-full" viewBox="0 0 1440 320">
+                            <path fill="#ffffff" fill-opacity="1" d="M0,224L48,213.3C96,203,192,181,288,181.3C384,181,480,203,576,224C672,245,768,267,864,261.3C960,256,1056,224,1152,208C1248,192,1344,192,1392,192L1440,192L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
+                        </svg>
+                        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20 text-white" viewBox="0 0 20 20" fill="currentColor">
+                                <path d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" />
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="p-5">
+                        <h3 class="text-xl font-bold text-green-900 mb-2">Bowl de Mango</h3>
+                        <p class="text-gray-600 mb-4">Base de yogurt natural con mango fresco y tu elección de toppings.</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-green-600 font-bold">$9.49</span>
+                            <button class="add-to-cart-btn bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition" 
+                                    data-name="Bowl de Mango" 
+                                    data-price="9.49" 
+                                    data-id="bowl-2">Añadir al Carrito</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bowl 3: Plátano -->
+                <div class="bowl-card bg-white rounded-xl shadow-md overflow-hidden">
+                    <div class="bowl-image banana-gradient relative">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="absolute bottom-0 left-0 w-full" viewBox="0 0 1440 320">
+                            <path fill="#ffffff" fill-opacity="1" d="M0,224L48,213.3C96,203,192,181,288,181.3C384,181,480,203,576,224C672,245,768,267,864,261.3C960,256,1056,224,1152,208C1248,192,1344,192,1392,192L1440,192L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
+                        </svg>
+                        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20 text-white" viewBox="0 0 20 20" fill="currentColor">
+                                <path d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" />
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="p-5">
+                        <h3 class="text-xl font-bold text-green-900 mb-2">Bowl de Plátano</h3>
+                        <p class="text-gray-600 mb-4">Base de yogurt natural con plátano fresco y tu elección de toppings.</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-green-600 font-bold">$8.49</span>
+                            <button class="add-to-cart-btn bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition" 
+                                    data-name="Bowl de Plátano" 
+                                    data-price="8.49" 
+                                    data-id="bowl-3">Añadir al Carrito</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bowl 4: Arándanos -->
+                <div class="bowl-card bg-white rounded-xl shadow-md overflow-hidden">
+                    <div class="bowl-image blueberry-gradient relative">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="absolute bottom-0 left-0 w-full" viewBox="0 0 1440 320">
+                            <path fill="#ffffff" fill-opacity="1" d="M0,224L48,213.3C96,203,192,181,288,181.3C384,181,480,203,576,224C672,245,768,267,864,261.3C960,256,1056,224,1152,208C1248,192,1344,192,1392,192L1440,192L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
+                        </svg>
+                        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20 text-white" viewBox="0 0 20 20" fill="currentColor">
+                                <path d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" />
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="p-5">
+                        <h3 class="text-xl font-bold text-green-900 mb-2">Bowl de Arándanos</h3>
+                        <p class="text-gray-600 mb-4">Base de yogurt natural con arándanos frescos y tu elección de toppings.</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-green-600 font-bold">$9.99</span>
+                            <button class="add-to-cart-btn bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition" 
+                                    data-name="Bowl de Arándanos" 
+                                    data-price="9.99" 
+                                    data-id="bowl-4">Añadir al Carrito</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bowl 5: Mix de Frutas -->
+                <div class="bowl-card bg-white rounded-xl shadow-md overflow-hidden">
+                    <div class="bowl-image mixed-gradient relative">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="absolute bottom-0 left-0 w-full" viewBox="0 0 1440 320">
+                            <path fill="#ffffff" fill-opacity="1" d="M0,224L48,213.3C96,203,192,181,288,181.3C384,181,480,203,576,224C672,245,768,267,864,261.3C960,256,1056,224,1152,208C1248,192,1344,192,1392,192L1440,192L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
+                        </svg>
+                        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20 text-white" viewBox="0 0 20 20" fill="currentColor">
+                                <path d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" />
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="p-5">
+                        <h3 class="text-xl font-bold text-green-900 mb-2">Bowl Mix de Frutas</h3>
+                        <p class="text-gray-600 mb-4">Base de yogurt natural con variedad de frutas frescas y tu elección de toppings.</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-green-600 font-bold">$10.49</span>
+                            <button class="add-to-cart-btn bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition" 
+                                    data-name="Bowl Mix de Frutas" 
+                                    data-price="10.49" 
+                                    data-id="bowl-5">Añadir al Carrito</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Toppings Section (kept for informational display, actual selection in modal) -->
+    <section id="toppings" class="py-16 bg-green-50">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl md:text-4xl font-bold text-center text-green-900 mb-4">Nuestros Toppings</h2>
+            <p class="text-center text-gray-600 mb-12 max-w-2xl mx-auto">Explora nuestros toppings. Selecciona tus favoritos al personalizar tu bowl.</p>
+            
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                <!-- Topping 1: Granola -->
+                <div class="topping-badge bg-white p-4 rounded-xl shadow-md text-center">
+                    <div class="bg-amber-100 w-16 h-16 mx-auto rounded-full flex items-center justify-center mb-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                        </svg>
+                    </div>
+                    <h3 class="font-medium text-green-900">Granola</h3>
+                    <p class="text-sm text-gray-500">$1.50</p>
+                </div>
+                
+                <!-- Topping 2: Crema de Maní -->
+                <div class="topping-badge bg-white p-4 rounded-xl shadow-md text-center">
+                    <div class="bg-amber-100 w-16 h-16 mx-auto rounded-full flex items-center justify-center mb-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+                        </svg>
+                    </div>
+                    <h3 class="font-medium text-green-900">Crema de Maní</h3>
+                    <p class="text-sm text-gray-500">$1.75</p>
+                </div>
+                
+                <!-- Topping 3: Semillas de Chía -->
+                <div class="topping-badge bg-white p-4 rounded-xl shadow-md text-center">
+                    <div class="bg-amber-100 w-16 h-16 mx-auto rounded-full flex items-center justify-center mb-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z" />
+                        </svg>
+                    </div>
+                    <h3 class="font-medium text-green-900">Semillas de Chía</h3>
+                    <p class="text-sm text-gray-500">$1.25</p>
+                </div>
+                
+                <!-- Topping 4: Arándanos -->
+                <div class="topping-badge bg-white p-4 rounded-xl shadow-md text-center">
+                    <div class="bg-amber-100 w-16 h-16 mx-auto rounded-full flex items-center justify-center mb-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
+                        </svg>
+                    </div>
+                    <h3 class="font-medium text-green-900">Arándanos</h3>
+                    <p class="text-sm text-gray-500">$2.00</p>
+                </div>
+                
+                <!-- Topping 5: Fresas -->
+                <div class="topping-badge bg-white p-4 rounded-xl shadow-md text-center">
+                    <div class="bg-amber-100 w-16 h-16 mx-auto rounded-full flex items-center justify-center mb-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7" />
+                        </svg>
+                    </div>
+                    <h3 class="font-medium text-green-900">Fresas</h3>
+                    <p class="text-sm text-gray-500">$1.75</p>
+                </div>
+                
+                <!-- Topping 6: Plátano -->
+                <div class="topping-badge bg-white p-4 rounded-xl shadow-md text-center">
+                    <div class="bg-amber-100 w-16 h-16 mx-auto rounded-full flex items-center justify-center mb-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <h3 class="font-medium text-green-900">Plátano</h3>
+                    <p class="text-sm text-gray-500">$1.50</p>
+                </div>
+                
+                <!-- Topping 7: Mango -->
+                <div class="topping-badge bg-white p-4 rounded-xl shadow-md text-center">
+                    <div class="bg-amber-100 w-16 h-16 mx-auto rounded-full flex items-center justify-center mb-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                        </svg>
+                    </div>
+                    <h3 class="font-medium text-green-900">Mango</h3>
+                    <p class="text-sm text-gray-500">$2.00</p>
+                </div>
+                
+                <!-- Topping 8: Miel -->
+                <div class="topping-badge bg-white p-4 rounded-xl shadow-md text-center">
+                    <div class="bg-amber-100 w-16 h-16 mx-auto rounded-full flex items-center justify-center mb-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                        </svg>
+                    </div>
+                    <h3 class="font-medium text-green-900">Miel</h3>
+                    <p class="text-sm text-gray-500">$1.00</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Benefits Section -->
+    <section class="py-16 bg-white">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl md:text-4xl font-bold text-center text-green-900 mb-12">Beneficios de Nuestros Bowls</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="bg-green-50 p-6 rounded-xl shadow-md text-center">
+                    <div class="bg-green-100 w-16 h-16 mx-auto rounded-full flex items-center justify-center mb-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-green-900 mb-2">100% Orgánico</h3>
+                    <p class="text-gray-600">Utilizamos solo frutas y productos frescos, cultivados orgánicamente y libres de químicos.</p>
+                </div>
+                
+                <div class="bg-green-50 p-6 rounded-xl shadow-md text-center">
+                    <div class="bg-green-100 w-16 h-16 mx-auto rounded-full flex items-center justify-center mb-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-green-900 mb-2">Energía Natural</h3>
+                    <p class="text-gray-600">Nuestros bowls son una fuente natural de energía para mantenerte activo y saludable durante todo el día.</p>
+                </div>
+
+                <div class="bg-green-50 p-6 rounded-xl shadow-md text-center">
+                    <div class="bg-green-100 w-16 h-16 mx-auto rounded-full flex items-center justify-center mb-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.001 12.001 0 002.928 12c0 3.124 1.155 5.952 3.075 8.292a12.001 12.001 0 0014.282-8.292 12.001 12.001 0 00-2.863-9.056z" />
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-green-900 mb-2">Hecho con Amor</h3>
+                    <p class="text-gray-600">Cada bowl es preparado con cuidado y dedicación para ofrecerte la mejor experiencia.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Us Section -->
+    <section id="about" class="py-16 bg-green-50">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl md:text-4xl font-bold text-center text-green-900 mb-4">Sobre Nosotros</h2>
+            <p class="text-center text-gray-600 mb-12 max-w-2xl mx-auto">En Frutella, creemos en una alimentación saludable y deliciosa para todos.</p>
+            
+            <div class="flex flex-col md:flex-row items-center gap-8">
+                <div class="md:w-1/2">
+                    <!-- REMOVED THE IMAGE AS REQUESTED -->
+                    <div class="bg-gradient-to-br from-green-300 to-lime-400 p-8 rounded-xl shadow-lg flex items-center justify-center h-64 text-green-900 font-bold text-2xl text-center">
+                        ¡Come Sano, Vive Feliz!
+                        <br>
+                        Frutella
+                    </div>
+                </div>
+                <div class="md:w-1/2">
+                    <h3 class="text-2xl font-bold text-green-800 mb-4">Nuestra Misión</h3>
+                    <p class="text-gray-700 mb-4">Frutella nació de la pasión por la comida natural y el bienestar. Nuestra misión es ofrecer bowls de frutas orgánicas, frescos y nutritivos que deleiten tu paladar y cuiden tu cuerpo.</p>
+                    <p class="text-gray-700 mb-4">Trabajamos directamente con agricultores locales para asegurar que cada fruta que usamos sea de la más alta calidad y cultivada de manera sostenible.</p>
+                    <h3 class="text-2xl font-bold text-green-800 mb-4">Nuestros Valores</h3>
+                    <ul class="list-disc list-inside text-gray-700 space-y-2">
+                        <li>Frescura y Calidad: Ingredientes siempre frescos y de la mejor calidad.</li>
+                        <li>Sostenibilidad: Apoyamos la agricultura orgánica y las prácticas ecológicas.</li>
+                        <li>Bienestar: Promovemos un estilo de vida saludable a través de la nutrición.</li>
+                        <li>Comunidad: Nos conectamos con nuestros clientes y proveedores locales.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="py-16 bg-white">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl md:text-4xl font-bold text-center text-green-900 mb-4">Contáctanos</h2>
+            <p class="text-center text-gray-600 mb-12 max-w-2xl mx-auto">¿Tienes alguna pregunta o quieres hacer un pedido especial? ¡Estamos aquí para ayudarte!</p>
+            
+            <div class="max-w-xl mx-auto bg-green-50 p-8 rounded-xl shadow-lg">
+                <form class="space-y-6">
+                    <div>
+                        <label for="name" class="block text-gray-700 font-medium mb-2">Nombre completo</label>
+                        <input type="text" id="name" class="w-full px-4 py-3 rounded-lg border-gray-300 focus:border-green-500 focus:ring-green-500" placeholder="Tu nombre">
+                    </div>
+                    <div>
+                        <label for="email" class="block text-gray-700 font-medium mb-2">Correo electrónico</label>
+                        <input type="email" id="email" class="w-full px-4 py-3 rounded-lg border-gray-300 focus:border-green-500 focus:ring-green-500" placeholder="tu@ejemplo.com">
+                    </div>
+                    <div>
+                        <label for="message" class="block text-gray-700 font-medium mb-2">Mensaje</label>
+                        <textarea id="message" rows="5" class="w-full px-4 py-3 rounded-lg border-gray-300 focus:border-green-500 focus:ring-green-500" placeholder="Escribe tu mensaje aquí..."></textarea>
+                    </div>
+                    <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition transform hover:-translate-y-1">Enviar Mensaje</button>
+                </form>
+            </div>
+
+            <div class="mt-12 text-center text-gray-600">
+                <p class="mb-2">📍 Av. Primavera 123, Miraflores, Lima, Perú</p>
+                <p class="mb-2">📞 +51 987 654 321</p>
+                <p class="mb-2">📧 info@frutella.com</p>
+                <div class="flex justify-center space-x-4 mt-4">
+                    <a href="#" class="text-gray-500 hover:text-green-600 transition"><img src="https://img.icons8.com/ios-filled/24/000000/facebook-new.png" alt="Facebook"></a>
+                    <a href="#" class="text-gray-500 hover:text-green-600 transition"><img src="https://img.icons8.com/ios-filled/24/000000/instagram-new.png" alt="Instagram"></a>
+                    <a href="#" class="text-gray-500 hover:text-green-600 transition"><img src="https://img.icons8.com/ios-filled/24/000000/twitter.png" alt="Twitter"></a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-green-900 text-white py-8">
+        <div class="container mx-auto px-4 text-center">
+            <p>&copy; 2025 Frutella. Todos los derechos reservados.</p>
+            <div class="flex justify-center space-x-4 mt-4">
+                <a href="#privacy" class="hover:text-green-200">Política de Privacidad</a>
+                <a href="#terms" class="hover:text-green-200">Términos y Condiciones</a>
+            </div>
+        </div>
+    </footer>
+
+    <script type="module">
+        // Firebase imports (placeholders for potential future use, not directly used for localStorage alerts)
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, addDoc, setDoc, updateDoc, deleteDoc, onSnapshot, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Firebase configuration and initialization (placeholders as per instructions)
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+
+        let app, db, auth, userId;
+        let isAuthReady = false;
+
+        // Initialize Firebase
+        if (Object.keys(firebaseConfig).length > 0) {
+            app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            auth = getAuth(app);
+
+            onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    userId = user.uid;
+                } else {
+                    // Sign in anonymously if no initial token or user is not authenticated
+                    try {
+                        const anonUser = await signInAnonymously(auth);
+                        userId = anonUser.user.uid;
+                    } catch (error) {
+                        console.error("Error signing in anonymously:", error);
+                    }
+                }
+                isAuthReady = true;
+                console.log("Firebase Auth Ready. User ID:", userId);
+            });
+
+            // Attempt to sign in with custom token if available
+            if (typeof __initial_auth_token !== 'undefined') {
+                signInWithCustomToken(auth, __initial_auth_token)
+                    .then(() => console.log("Signed in with custom token"))
+                    .catch(error => console.error("Error signing in with custom token:", error));
+            }
+        } else {
+            console.warn("Firebase config not found. Running without Firebase authentication.");
+            userId = localStorage.getItem('anonUserId') || crypto.randomUUID(); // Fallback for userId if Firebase is not configured
+            localStorage.setItem('anonUserId', userId); // Persist anonymous ID
+            isAuthReady = true;
+        }
+
+
+        // DOM Elements
+        const menuButton = document.getElementById('menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const cartButton = document.getElementById('cart-button');
+        const cartModal = document.getElementById('cart-modal');
+        const closeCartButton = document.getElementById('close-cart');
+        const addToCartButtons = document.querySelectorAll('.add-to-cart-btn');
+        const cartItemsContainer = document.getElementById('cart-items');
+        const cartCountSpan = document.getElementById('cart-count');
+        const cartSubtotalSpan = document.getElementById('cart-subtotal');
+        const cartTotalSpan = document.getElementById('cart-total');
+        const emptyCartMessage = document.getElementById('empty-cart-message');
+        const checkoutButton = document.getElementById('checkout-btn');
+        const customerNameInput = document.getElementById('customer-name');
+        const notificationArea = document.getElementById('notification-area');
+        
+        // Customize Bowl Modal Elements
+        const customizeBowlModal = document.getElementById('customize-bowl-modal');
+        const closeCustomizeBowlButton = document.getElementById('close-customize-bowl');
+        const customizeBowlName = document.getElementById('customize-bowl-name');
+        const customizeBowlPrice = document.getElementById('customize-bowl-price');
+        const customizeToppingsContainer = document.getElementById('customize-toppings-container');
+        const customizeTotalPrice = document.getElementById('customize-total-price');
+        const addCustomizedBowlToCartBtn = document.getElementById('add-customized-bowl-to-cart');
+
+        // Admin Panel Elements
+        const adminModal = document.getElementById('admin-modal');
+        const closeAdminButton = document.getElementById('close-admin');
+        const adminAccessButton = document.getElementById('admin-access-button'); // Button in navbar
+        const adminLoginArea = document.getElementById('admin-login-area');
+        const adminPasswordInput = document.getElementById('admin-password-input');
+        const adminLoginBtn = document.getElementById('admin-login-btn'); // Login button inside admin modal
+        const adminContentArea = document.getElementById('admin-content-area');
+        const adminLogoutButton = document.getElementById('admin-logout-btn');
+        const pendingOrdersContainer = document.getElementById('pending-orders');
+        const noOrdersMessage = document.getElementById('no-orders-message');
+
+        const clientOrderAlert = document.getElementById('client-order-alert');
+        const clientAlertMessage = document.getElementById('client-alert-message');
+        const closeClientAlert = document.getElementById('close-client-alert');
+
+        // State Variables (from localStorage for persistence)
+        let cart = JSON.parse(localStorage.getItem('cart')) || [];
+        let orders = JSON.parse(localStorage.getItem('orders')) || [];
+        let currentClientId = localStorage.getItem('currentClientId') || crypto.randomUUID();
+        localStorage.setItem('currentClientId', currentClientId); // Ensure a client ID is always set
+
+        const ADMIN_PASSWORD = 'admin123'; // Hardcoded password for admin access
+        let isAdminLoggedIn = localStorage.getItem('isAdminLoggedIn') === 'true';
+
+        let currentBowlForCustomization = null; // Stores data of the bowl being customized
+        let selectedToppingsForCurrentBowl = []; // Toppings selected within the customization modal
+
+
+        // --- Utility Functions ---
+
+        function formatPrice(price) {
+            return `$${parseFloat(price).toFixed(2)}`;
+        }
+
+        function generateUniqueId() {
+            return Date.now().toString(36) + Math.random().toString(36).substr(2);
+        }
+
+        function showNotification(message, type = 'success') {
+            const notification = document.createElement('div');
+            notification.className = `notification fixed top-4 right-4 bg-${type === 'success' ? 'green' : 'red'}-500 text-white px-4 py-3 rounded-lg shadow-md z-50`;
+            notification.textContent = message;
+            notificationArea.appendChild(notification);
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+
+        function triggerVibration() {
+            if ("vibrate" in navigator) {
+                // Vibrate for 500ms when an order is ready
+                navigator.vibrate(500); 
+            } else {
+                console.log("Vibration API not supported on this device/browser.");
+            }
+        }
+
+        // --- Cart Functions ---
+
+        function updateCartDisplay() {
+            cartItemsContainer.innerHTML = '';
+            let subtotal = 0;
+
+            if (cart.length === 0) {
+                emptyCartMessage.classList.remove('hidden');
+            } else {
+                emptyCartMessage.classList.add('hidden');
+                cart.forEach(item => {
+                    let itemPriceIncludingToppings = item.price;
+                    item.toppings.forEach(topping => {
+                        itemPriceIncludingToppings += topping.price;
+                    });
+                    const itemTotal = itemPriceIncludingToppings * item.quantity;
+                    subtotal += itemTotal;
+
+                    const itemElement = document.createElement('div');
+                    itemElement.className = 'cart-item flex justify-between items-center py-2 border-b border-gray-100';
+                    itemElement.innerHTML = `
+                        <div>
+                            <p class="font-medium text-green-800">${item.name}</p>
+                            ${item.toppings && item.toppings.length > 0 ? `<p class="text-sm text-gray-500">Toppings: ${item.toppings.map(t => t.name).join(', ')}</p>` : ''}
+                            <p class="text-sm text-gray-500">${formatPrice(itemPriceIncludingToppings)} x ${item.quantity}</p>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <button data-id="${item.id}" class="decrease-quantity-btn bg-gray-200 text-gray-700 px-2 py-1 rounded">-</button>
+                            <span>${item.quantity}</span>
+                            <button data-id="${item.id}" class="increase-quantity-btn bg-gray-200 text-gray-700 px-2 py-1 rounded">+</button>
+                            <button data-id="${item.id}" class="remove-from-cart-btn text-red-500 hover:text-red-700 ml-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm6 0a1 1 0 11-2 0v6a1 1 0 112 0V8z" clip-rule="evenodd" />
+                                </svg>
+                            </button>
+                        </div>
+                    `;
+                    cartItemsContainer.appendChild(itemElement);
+                });
+            }
+
+            cartSubtotalSpan.textContent = formatPrice(subtotal);
+            cartTotalSpan.textContent = formatPrice(subtotal);
+            cartCountSpan.textContent = cart.reduce((sum, item) => sum + item.quantity, 0);
+
+            localStorage.setItem('cart', JSON.stringify(cart));
+        }
+
+        // --- Customize Bowl Logic ---
+        const allToppings = [
+            { name: "Granola", price: 1.50, id: "topping-1" },
+            { name: "Crema de Maní", price: 1.75, id: "topping-2" },
+            { name: "Semillas de Chía", price: 1.25, id: "topping-3" },
+            { name: "Arándanos", price: 2.00, id: "topping-4" },
+            { name: "Fresas", price: 1.75, id: "topping-5" },
+            { name: "Plátano", price: 1.50, id: "topping-6" },
+            { name: "Mango", price: 2.00, id: "topping-7" },
+            { name: "Miel", price: 1.00, id: "topping-8" }
+        ];
+
+        function openCustomizeBowlModal(bowlName, bowlPrice, bowlId) {
+            currentBowlForCustomization = { name: bowlName, price: bowlPrice, id: bowlId };
+            selectedToppingsForCurrentBowl = []; // Reset selected toppings for new customization
+
+            customizeBowlName.textContent = `Personalizar ${bowlName}`;
+            customizeBowlPrice.textContent = formatPrice(bowlPrice);
+            
+            customizeToppingsContainer.innerHTML = ''; // Clear previous toppings
+
+            // Dynamically render topping options in the modal
+            allToppings.forEach(topping => {
+                const toppingElement = document.createElement('div');
+                toppingElement.className = 'topping-badge bg-white p-3 rounded-xl shadow-sm text-center cursor-pointer';
+                toppingElement.dataset.id = topping.id;
+                toppingElement.dataset.name = topping.name;
+                toppingElement.dataset.price = topping.price;
+
+                const isSelected = selectedToppingsForCurrentBowl.some(t => t.id === topping.id);
+                if (isSelected) {
+                    toppingElement.classList.add('topping-selected');
+                }
+
+                toppingElement.innerHTML = `
+                    <div class="bg-amber-100 w-12 h-12 mx-auto rounded-full flex items-center justify-center mb-2">
+                        ${getSvgForTopping(topping.id)}
+                    </div>
+                    <h3 class="font-medium text-green-900 text-sm">${topping.name}</h3>
+                    <p class="text-xs text-gray-500">${formatPrice(topping.price)}</p>
+                `;
+                customizeToppingsContainer.appendChild(toppingElement);
+
+                toppingElement.addEventListener('click', (event) => {
+                    toggleToppingInCustomization(event.currentTarget);
+                });
+            });
+
+            updateCustomizeTotalPrice();
+            customizeBowlModal.classList.remove('hidden');
+        }
+
+        function getSvgForTopping(id) {
+            switch(id) {
+                case 'topping-1': return `<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" /></svg>`;
+                case 'topping-2': return `<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" /></svg>`;
+                case 'topping-3': return `<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z" /></svg>`;
+                case 'topping-4': return `<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" /></svg>`;
+                case 'topping-5': return `<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7" /></svg>`;
+                case 'topping-6': return `<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`;
+                case 'topping-7': return `<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>`;
+                case 'topping-8': return `<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>`;
+                default: return '';
+            }
+        }
+
+        function toggleToppingInCustomization(toppingElement) {
+            const toppingId = toppingElement.dataset.id;
+            const toppingName = toppingElement.dataset.name;
+            const toppingPrice = parseFloat(toppingElement.dataset.price);
+
+            const existingIndex = selectedToppingsForCurrentBowl.findIndex(t => t.id === toppingId);
+
+            if (existingIndex > -1) {
+                // Remove topping
+                selectedToppingsForCurrentBowl.splice(existingIndex, 1);
+                toppingElement.classList.remove('topping-selected');
+                showNotification(`Topping ${toppingName} eliminado de la personalización.`, 'info');
+            } else {
+                // Add topping
+                selectedToppingsForCurrentBowl.push({ id: toppingId, name: toppingName, price: toppingPrice });
+                toppingElement.classList.add('topping-selected');
+                showNotification(`Topping ${toppingName} añadido a la personalización.`, 'info');
+            }
+            updateCustomizeTotalPrice();
+        }
+
+        function updateCustomizeTotalPrice() {
+            let total = currentBowlForCustomization.price;
+            selectedToppingsForCurrentBowl.forEach(topping => {
+                total += topping.price;
+            });
+            customizeTotalPrice.textContent = formatPrice(total);
+        }
+
+        function addCustomizedBowlToCart() {
+            const uniqueItemId = generateUniqueId(); // Unique ID for this specific cart item instance
+
+            cart.push({
+                id: uniqueItemId, // Unique ID for this specific item in the cart
+                originalId: currentBowlForCustomization.id, // Original bowl ID (e.g., bowl-1)
+                name: currentBowlForCustomization.name,
+                price: currentBowlForCustomization.price,
+                quantity: 1,
+                toppings: JSON.parse(JSON.stringify(selectedToppingsForCurrentBowl)) // Deep copy
+            });
+            
+            showNotification(`${currentBowlForCustomization.name} con ${selectedToppingsForCurrentBowl.length} topping(s) añadido al carrito!`);
+            customizeBowlModal.classList.add('hidden'); // Close modal
+            updateCartDisplay(); // Update cart UI
+        }
+
+        // --- Admin Panel Functions ---
+        function renderPendingOrders() {
+            pendingOrdersContainer.innerHTML = '';
+            const pending = orders.filter(order => order.status === 'pending');
+
+            if (pending.length === 0) {
+                noOrdersMessage.classList.remove('hidden');
+            } else {
+                noOrdersMessage.classList.add('hidden');
+                pending.forEach((order, index) => {
+                    const orderElement = document.createElement('div');
+                    orderElement.className = 'bg-gray-100 p-4 rounded-lg shadow-sm mb-4 border-l-4 border-blue-500';
+                    orderElement.innerHTML = `
+                        <p class="font-bold text-lg text-green-800 mb-2">Pedido #${order.orderId.substring(0, 8)} - Cliente: ${order.customerName || 'Anónimo'} (ID Cliente: ${order.clientId.substring(0, 8)}...)</p>
+                        <ul class="list-disc list-inside ml-4 mt-2 text-gray-700">
+                            ${order.items.map(item => {
+                                let itemPriceIncludingToppings = item.price;
+                                item.toppings.forEach(topping => {
+                                    itemPriceIncludingToppings += topping.price;
+                                });
+                                return `
+                                <li>${item.name} x ${item.quantity} (${formatPrice(itemPriceIncludingToppings)}) 
+                                    ${item.toppings && item.toppings.length > 0 ? `(Toppings: ${item.toppings.map(t => t.name).join(', ')})` : ''}
+                                </li>`;
+                            }).join('')}
+                        </ul>
+                        <p class="font-bold text-right mt-2">Total: ${formatPrice(order.total)}</p>
+                        <button data-order-id="${order.orderId}" data-client-id="${order.clientId}" class="mark-as-ready-btn mt-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow-md transition">
+                            Marcar Pedido Listo y Alertar
+                        </button>
+                    `;
+                    pendingOrdersContainer.appendChild(orderElement);
+                });
+            }
+        }
+
+        function markOrderAsReady(orderIdToMark, clientIdToAlert) {
+            const orderIndex = orders.findIndex(order => order.orderId === orderIdToMark);
+            if (orderIndex > -1) {
+                orders[orderIndex].status = 'ready';
+                localStorage.setItem('orders', JSON.stringify(orders)); // Trigger storage event
+                showNotification(`Pedido ${orderIdToMark.substring(0,8)}... marcado como listo.`, 'success');
+                renderPendingOrders(); // Re-render admin panel
+
+                // IMPORTANT: This relies on the client's page being open and listening
+                // In a real app, this would be a server-side push notification
+                // For this simulation, we'll store the alert for the specific client
+                localStorage.setItem(`client_alert_${clientIdToAlert}`, JSON.stringify({
+                    orderId: orderIdToMark,
+                    message: `¡Tu pedido #${orderIdToMark.substring(0,8)}... de Frutella está listo para recoger!`,
+                    timestamp: new Date().toISOString(),
+                    acknowledged: false
+                }));
+            }
+        }
+
+        // --- Client Notification Logic ---
+        function renderClientNotifications() {
+            const clientAlertData = JSON.parse(localStorage.getItem(`client_alert_${currentClientId}`));
+
+            if (clientAlertData && !clientAlertData.acknowledged) {
+                clientAlertMessage.textContent = clientAlertData.message;
+                clientOrderAlert.classList.remove('hidden');
+                triggerVibration(); // Trigger vibration for the client
+
+                // Mark as acknowledged so it doesn't keep popping up
+                clientAlertData.acknowledged = true;
+                localStorage.setItem(`client_alert_${currentClientId}`, JSON.stringify(clientAlertData));
+
+                // Optionally hide after a few seconds
+                setTimeout(() => {
+                    clientOrderAlert.classList.add('hidden');
+                }, 8000);
+            }
+        }
+
+        // --- Event Listeners ---
+
+        menuButton.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+
+        cartButton.addEventListener('click', () => {
+            cartModal.classList.remove('hidden');
+            updateCartDisplay();
+        });
+
+        closeCartButton.addEventListener('click', () => {
+            cartModal.classList.add('hidden');
+        });
+
+        closeClientAlert.addEventListener('click', () => {
+            clientOrderAlert.classList.add('hidden');
+            // Optionally clear the alert from localStorage once client closes it
+            localStorage.removeItem(`client_alert_${currentClientId}`);
+        });
+
+        document.addEventListener('click', (event) => {
+            if (event.target.classList.contains('modal-overlay')) {
+                cartModal.classList.add('hidden');
+                adminModal.classList.add('hidden');
+                customizeBowlModal.classList.add('hidden'); // Also close customize modal
+            }
+        });
+
+        // Open customization modal when 'Add to Cart' is clicked on a bowl
+        addToCartButtons.forEach(button => {
+            button.addEventListener('click', (event) => {
+                const name = event.target.dataset.name;
+                const price = parseFloat(event.target.dataset.price);
+                const id = event.target.dataset.id; // Original bowl ID
+                openCustomizeBowlModal(name, price, id);
+            });
+        });
+
+        // Add customized bowl to cart from the customization modal
+        addCustomizedBowlToCartBtn.addEventListener('click', addCustomizedBowlToCart);
+        closeCustomizeBowlButton.addEventListener('click', () => {
+            customizeBowlModal.classList.add('hidden');
+        });
+
+
+        // Event delegation for cart item buttons (decrease/increase quantity, remove)
+        cartItemsContainer.addEventListener('click', (event) => {
+            if (event.target.classList.contains('remove-from-cart-btn')) {
+                const id = event.target.dataset.id; // This is the unique item ID in cart
+                removeFromCart(id);
+            } else if (event.target.classList.contains('decrease-quantity-btn')) {
+                const id = event.target.dataset.id;
+                decreaseQuantity(id);
+            } else if (event.target.classList.contains('increase-quantity-btn')) {
+                const id = event.target.dataset.id;
+                increaseQuantity(id);
+            }
+        });
+
+        checkoutButton.addEventListener('click', () => {
+            const customerName = customerNameInput.value.trim();
+            if (cart.length === 0) {
+                showNotification('Tu carrito está vacío. ¡Añade algo delicioso primero!', 'error');
+                return;
+            }
+
+            const orderTotal = cart.reduce((sum, item) => {
+                let itemPrice = item.price * item.quantity;
+                item.toppings.forEach(topping => {
+                    itemPrice += topping.price * item.quantity;
+                });
+                return sum + itemPrice;
+            }, 0);
+
+            const newOrderId = generateUniqueId();
+
+            orders.push({
+                orderId: newOrderId,
+                clientId: currentClientId, // Associate order with the current client session
+                customerName: customerName || 'Anónimo',
+                items: JSON.parse(JSON.stringify(cart)), // Deep copy cart items
+                total: orderTotal,
+                timestamp: new Date().toLocaleString(),
+                status: 'pending' // New status field
+            });
+            localStorage.setItem('orders', JSON.stringify(orders));
+
+            cart = [];
+            localStorage.removeItem('cart');
+            updateCartDisplay();
+            customerNameInput.value = '';
+            cartModal.classList.add('hidden');
+            showNotification(`¡Tu pedido #${newOrderId.substring(0, 8)}... ha sido realizado con éxito!`);
+            renderPendingOrders(); // Update admin panel
+        });
+
+        // Admin login/logout logic
+        adminAccessButton.addEventListener('click', () => {
+            adminModal.classList.remove('hidden');
+            if (isAdminLoggedIn) {
+                adminLoginArea.classList.add('hidden');
+                adminContentArea.classList.remove('hidden');
+                renderPendingOrders();
+            } else {
+                adminLoginArea.classList.remove('hidden');
+                adminContentArea.classList.add('hidden');
+                adminPasswordInput.value = ''; // Clear password field
+            }
+        });
+
+        adminLoginBtn.addEventListener('click', () => {
+            const password = adminPasswordInput.value;
+            if (password === ADMIN_PASSWORD) {
+                isAdminLoggedIn = true;
+                localStorage.setItem('isAdminLoggedIn', 'true');
+                adminLoginArea.classList.add('hidden');
+                adminContentArea.classList.remove('hidden');
+                renderPendingOrders();
+                showNotification('Acceso de administrador concedido.', 'success');
+            } else {
+                showNotification('Clave incorrecta. Intenta de nuevo.', 'error');
+                adminPasswordInput.value = '';
+            }
+        });
+
+        adminLogoutButton.addEventListener('click', () => {
+            isAdminLoggedIn = false;
+            localStorage.setItem('isAdminLoggedIn', 'false');
+            adminContentArea.classList.add('hidden');
+            adminLoginArea.classList.remove('hidden'); // Show login again
+            showNotification('Sesión de administrador cerrada.', 'info');
+        });
+
+        closeAdminButton.addEventListener('click', () => {
+            adminModal.classList.add('hidden');
+        });
+
+        // Event delegation for admin panel buttons (mark as ready)
+        pendingOrdersContainer.addEventListener('click', (event) => {
+            if (event.target.classList.contains('mark-as-ready-btn')) {
+                const orderId = event.target.dataset.orderId;
+                const clientId = event.target.dataset.clientId; // Get client ID to alert
+                markOrderAsReady(orderId, clientId);
+            }
+        });
+
+        // Listen for storage changes across tabs/windows for multi-user simulation (limited for same page)
+        window.addEventListener('storage', (event) => {
+            if (event.key === 'orders') {
+                orders = JSON.parse(event.newValue);
+                renderPendingOrders(); // Update admin view if open
+            }
+            // Check specifically for client's own alert
+            if (event.key === `client_alert_${currentClientId}`) {
+                renderClientNotifications(); // Update client view if open
+            }
+        });
+        
+        // Initial load calls
+        updateCartDisplay();
+        renderPendingOrders();
+        renderClientNotifications(); // Check for any ready orders on load
+    </script>
+</body>
+</html>
